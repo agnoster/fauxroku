@@ -1,0 +1,37 @@
+#!/bin/bash
+
+ROOT=/var/fauxroku
+APP=$1
+HASH=$2
+
+APP_DIR=$ROOT/apps/$APP
+CACHE_DIR=$APP_DIR/cache
+BUILD_DIR=$APP_DIR/$HASH
+
+export GIT_DIR=$HOME/$APP.git
+export GIT_WORK_TREE=$BUILD_DIR
+
+mkdir -p $BUILD_DIR
+mkdir -p $CACHE_DIR
+
+echo "-----> Received push, deploying revision $HASH"
+
+echo "-----> Checking out new code to $BUILD_DIR"
+git checkout -fq $HASH
+
+cd $ROOT/buildpacks
+
+echo "-----> Detecting build type"
+for BP in *
+do cd $ROOT/buildpacks/$BP
+bin/detect $BUILD_DIR || continue
+bin/compile $BUILD_DIR $CACHE_DIR
+bin/release $BUILD_DIR > $BUILD_DIR/.release
+break
+done
+
+cd $BUILD_DIR
+sudo foreman export upstart ./init -p 80 -u root -a $APP -t $ROOT/deploy/upstart -l ./log
+
+rm $APP_DIR/current
+ln -s $BUILD_DIR $APP_DIR/current

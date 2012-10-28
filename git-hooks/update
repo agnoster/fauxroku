@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+# Skip any non-master branches
+test "$1" != "refs/heads/master" && exit
+
+REPONAME=$(basename $PWD)
+APP=${REPONAME%.*}
+HASH=$3
+
+if [ "$HASH" = "0000000000000000000000000000000000000000" ]
+then echo "-----> Detected app deletion"
+sudo rm -rf /var/fauxroku/apps/$APP_DIR
+echo "-----> App deleted"
+exit
+fi
+
+/var/fauxroku/deploy/deploy-app $APP $HASH

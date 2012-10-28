@@ -1,0 +1,14 @@
+#!/bin/bash
+
+APP=$1
+REPO=$HOME/$APP.git
+ROOT=/var/fauxroku
+
+# Creat git repo
+mkdir $REPO
+cd $REPO
+git init --bare
+
+# Install hooks
+rm -rf hooks
+ln -s $ROOT/deploy/git-hooks hooks
