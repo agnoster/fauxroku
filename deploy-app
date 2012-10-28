@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 ROOT=/var/fauxroku
 APP=$1
@@ -6,13 +6,15 @@ HASH=$2
 
 APP_DIR=$ROOT/apps/$APP
 CACHE_DIR=$APP_DIR/cache
-BUILD_DIR=$APP_DIR/$HASH
+BUILD_DIR=$APP_DIR/build/$HASH
+SLUG_DIR=$APP_DIR/slug
 
 export GIT_DIR=$HOME/$APP.git
 export GIT_WORK_TREE=$BUILD_DIR
 
 mkdir -p $BUILD_DIR
 mkdir -p $CACHE_DIR
+mkdir -p $SLUG_DIR
 
 echo "-----> Received push, deploying revision $HASH"
 
@@ -31,7 +33,6 @@ break
 done
 
 cd $BUILD_DIR
-sudo foreman export upstart ./init -p 80 -u root -a $APP -t $ROOT/deploy/upstart -l ./log
-
-rm $APP_DIR/current
-ln -s $BUILD_DIR $APP_DIR/current
+touch $APP_DIR/config
+sudo foreman export upstart $SLUG_DIR/init -u root -a $APP -t $ROOT/deploy/upstart -l $SLUG_DIR/log -e $APP_DIR/config
+cp -r $BUILD_DIR $SLUG_DIR/code
