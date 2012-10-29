@@ -7,19 +7,17 @@ HASH=$2
 APP_DIR=$ROOT/apps/$APP
 CACHE_DIR=$APP_DIR/cache
 BUILD_DIR=$APP_DIR/build/$HASH
-SLUG_DIR=$APP_DIR/slug
+
+mkdir -p $BUILD_DIR
+mkdir -p $CACHE_DIR
 
 export GIT_DIR=$HOME/$APP.git
 export GIT_WORK_TREE=$BUILD_DIR
 
-mkdir -p $BUILD_DIR
-mkdir -p $CACHE_DIR
-mkdir -p $SLUG_DIR
-
-echo "-----> Received push, deploying revision $HASH"
-
 echo "-----> Checking out new code to $BUILD_DIR"
-git checkout -fq $HASH
+git checkout -q slug 2>/dev/null || git checkout -q --orphan slug
+sudo rm -rf $BUILD_DIR/*
+git checkout -fq $HASH -- .
 
 cd $ROOT/buildpacks
 
@@ -32,7 +30,14 @@ bin/release $BUILD_DIR > $BUILD_DIR/.release
 break
 done
 
-cd $BUILD_DIR
+echo "-----> Exporting foreman config"
 touch $APP_DIR/config
-sudo foreman export upstart $SLUG_DIR/init -u root -a $APP -t $ROOT/deploy/upstart -l $SLUG_DIR/log -e $APP_DIR/config
-cp -r $BUILD_DIR $SLUG_DIR/code
+cd $BUILD_DIR
+sudo foreman export upstart ./.init -u root -a $APP -t $ROOT/deploy/upstart -l $APP_DIR/log -e $APP_DIR/config >/dev/null
+
+RELEASE=`git rev-list --count slug 2>/dev/null || echo 0`
+echo "-----> Building slug #$RELEASE"
+git add --all
+git commit -q -m "Release #$RELEASE from $HASH" --allow-empty
+git tag slug-$RELEASE
+git log slug-$RELEASE -1 --format=tformat:"       %ad | %h | %s"
