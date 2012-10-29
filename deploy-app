@@ -32,7 +32,9 @@ done
 
 echo "-----> Exporting foreman config"
 touch $APP_DIR/config
-cd $BUILD_DIR
+rm $APP_DIR/current
+ln -s $BUILD_DIR $APP_DIR/current
+cd $APP_DIR/current
 sudo foreman export upstart ./.init -u root -a $APP -t $ROOT/deploy/upstart -l $APP_DIR/log -e $APP_DIR/config >/dev/null
 
 RELEASE=`git rev-list --count slug 2>/dev/null || echo 0`
@@ -41,3 +43,5 @@ git add --all
 git commit -q -m "Release #$RELEASE from $HASH" --allow-empty
 git tag slug-$RELEASE
 git log slug-$RELEASE -1 --format=tformat:"       %ad | %h | %s"
+
+echo "-----> Slug is ready for deployment"
