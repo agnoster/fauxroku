@@ -54,7 +54,7 @@ module Fauxroku
     private
 
     def app
-      App.new options[:app]
+      @app ||= App.new options[:app]
     end
   end
 end

@@ -40,7 +40,8 @@ module Fauxroku
     end
 
     def snapshot
-      @hash || 'snapshot'
+      @snapshot ||= "snapshot-" +
+        (@hash || "#{Time.now.strftime("%F-%T")}-#{rand 100000}")
     end
   end
 end
