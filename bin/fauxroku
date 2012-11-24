@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+#vim:ft=ruby
+
+require 'fauxroku/cli'
+
+$PROGRAM_NAME = File.basename(__FILE__)
+Fauxroku::CLI.start
