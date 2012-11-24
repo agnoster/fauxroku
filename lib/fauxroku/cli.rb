@@ -35,11 +35,12 @@ module Fauxroku
       end
     end
 
-    desc "detect [DIR]", "detect which buildpack to use"
-    def detect(dir=nil)
-      dir ||= Dir.pwd
-      Fauxroku::Buildpack.detect(dir).tap do |buildpack|
+    desc "build DIR", "build the application"
+    def build(dir)
+      app.load_code dir
+      Fauxroku::Buildpack.detect(app.work_dir).tap do |buildpack|
         say "Detected: #{buildpack.detected}"
+        buildpack.compile app.work_dir, app.cache_dir
       end
     end
 

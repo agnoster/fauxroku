@@ -1,3 +1,7 @@
 #!/bin/bash
+
+# Ignore everything except the master branch
 test "$1" != "refs/heads/master" && exit
+
+# Build the app
 fauxroku update --app <%= app.name %> $3

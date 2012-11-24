@@ -61,6 +61,11 @@ module Fauxroku
       @detected = buildpack if $?.success?
     end
 
+    # Public: Compile the application
+    def compile(dir, cache)
+      system command(:compile, dir, cache)
+    end
+
     # Public: The directory where the buildpacks are stored
     def self.cache_dir
       Fauxroku.dir 'buildpacks'
@@ -75,9 +80,8 @@ module Fauxroku
 
     # Public: Detect which default buildpack should run for a given app
     def self.detect(dir)
-      response = nil
       Buildpack.builtin.detect do |buildpack|
-        response = buildpack.detect dir
+        buildpack.detect dir
       end
     end
 

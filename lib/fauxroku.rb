@@ -6,9 +6,15 @@ require "fauxroku/version"
 #  - an interface to Buildpacks
 #  - a representation of Apps
 module Fauxroku
-  def self.dir(*path)
-    File.join(ENV['HOME'], ".fauxroku", *path).tap do |dir|
-      FileUtils.mkdir_p dir
+  # Public: Get the fauxroku directory from path parts, and ensure the
+  # directory exists.
+  #
+  # Returns a String representing the path to the directory
+  def self.dir(*parts)
+    @@dirs ||= {}
+    path = File.join(ENV['HOME'], ".fauxroku", *parts)
+    @@dirs[path] ||= path.tap do |dir|
+      FileUtils.mkdir_p dir unless File.exists? dir
     end
   end
 end
